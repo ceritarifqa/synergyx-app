@@ -391,92 +391,116 @@ export default function App() {
   );
 
 
-  // ── REGISTER / VERIFIKASI VIEW ─────────────────
+  // ── REGISTER VIEW ─────────────────────────────
   const RegisterView = () => {
     const [step, setStep] = useState(1);
     const [accType, setAccType] = useState('');
     const [docUploaded, setDocUploaded] = useState(false);
+    const accTypes = [
+      {type:'bisnis', title:'Bisnis / Perusahaan', desc:'Upload NIB atau link domain website resmi'},
+      {type:'komunitas', title:'Komunitas / Organisasi', desc:'Upload Impact Report atau bukti rekam jejak'},
+      {type:'individu', title:'Individu / Profesional', desc:'Upload KTP sebagai identitas resmi'},
+    ];
+    const docLabel = accType === 'bisnis' ? 'Upload NIB (PDF)' : accType === 'komunitas' ? 'Upload Impact Report (PDF)' : 'Upload KTP (JPG/PNG)';
     return (
       <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center p-6">
         <div className="w-full max-w-lg">
           <div className="flex items-center gap-2 justify-center mb-8">
-            <svg className="w-8 h-8" viewBox="0 0 100 100" fill="none"><path d="M50 5L95 50L50 95L5 50L50 5Z" stroke="#C5A869" strokeWidth="4" fill="none"/><path d="M50 18L82 50L50 82L18 50L50 18Z" fill="#2D4066" opacity="0.9"/></svg>
-            <span className="text-xl font-bold text-[#C5A869] font-['Cardo']">SynergyX</span>
+            <svg className="w-8 h-8" viewBox="0 0 100 100" fill="none">
+              <path d="M50 5L95 50L50 95L5 50L50 5Z" stroke="#C5A869" strokeWidth="4" fill="none"/>
+              <path d="M50 18L82 50L50 82L18 50L50 18Z" fill="#2D4066" opacity="0.9"/>
+            </svg>
+            <span className="text-xl font-bold text-[#C5A869]">SynergyX</span>
           </div>
           <div className="flex items-center justify-center gap-2 mb-8">
             {[1,2,3].map(s => (
               <div key={s} className="flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${step >= s ? "bg-[#0F1A2F] text-white" : "bg-gray-200 text-gray-400"}`}>{step > s ? <CheckCircle className="w-4 h-4"/> : s}</div>
-                {s < 3 && <div className={`w-12 h-0.5 ${step > s ? "bg-[#C5A869]" : "bg-gray-200"}`}/>}
+                <div className={["w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold", step >= s ? "bg-[#0F1A2F] text-white" : "bg-gray-200 text-gray-400"].join(" ")}>
+                  {step > s ? <CheckCircle className="w-4 h-4"/> : s}
+                </div>
+                {s < 3 && <div className={["w-12 h-0.5", step > s ? "bg-[#C5A869]" : "bg-gray-200"].join(" ")}/>}
               </div>
             ))}
           </div>
           <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
             {step === 1 && (
               <div>
-                <h3 className="text-2xl font-['Cardo'] font-bold text-[#0F1A2F] mb-2">Buat Akun SynergyX</h3>
+                <h3 className="text-2xl font-bold text-[#0F1A2F] mb-2">Buat Akun SynergyX</h3>
                 <p className="text-sm text-gray-500 mb-6">Isi data dasar profil Anda</p>
                 <div className="space-y-4">
-                  {[["Nama Brand / Entitas","text","Teman Kreativ"],["Email","email","hello@temankreativ.id"],["Password","password","••••••••"]].map(([label,type,ph]) => (
-                    <div key={label}><label className="text-xs font-bold text-gray-600 uppercase block mb-1.5">{label}</label>
-                    <input type={type} placeholder={ph} className="w-full bg-[#FDFBF7] border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#C5A869]"/></div>
-                  ))}
-                  <button onClick={() => setStep(2)} className="w-full py-3.5 bg-[#0F1A2F] text-white font-bold rounded-xl hover:bg-[#1E2D4A] transition">Lanjut →</button>
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 uppercase block mb-1.5">Nama Brand / Entitas</label>
+                    <input type="text" placeholder="Teman Kreativ" className="w-full bg-[#FDFBF7] border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#C5A869]"/>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 uppercase block mb-1.5">Email</label>
+                    <input type="email" placeholder="hello@temankreativ.id" className="w-full bg-[#FDFBF7] border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#C5A869]"/>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 uppercase block mb-1.5">Password</label>
+                    <input type="password" placeholder="min. 8 karakter" className="w-full bg-[#FDFBF7] border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#C5A869]"/>
+                  </div>
+                  <button onClick={() => setStep(2)} className="w-full py-3.5 bg-[#0F1A2F] text-white font-bold rounded-xl hover:bg-[#1E2D4A] transition">Lanjut</button>
                 </div>
               </div>
             )}
             {step === 2 && (
               <div>
-                <h3 className="text-2xl font-['Cardo'] font-bold text-[#0F1A2F] mb-2">Pilih Tipe Akun</h3>
-                <p className="text-sm text-gray-500 mb-6">Tentukan tipe entitas untuk verifikasi dokumen</p>
+                <h3 className="text-2xl font-bold text-[#0F1A2F] mb-2">Pilih Tipe Akun</h3>
+                <p className="text-sm text-gray-500 mb-6">Tentukan tipe entitas untuk verifikasi</p>
                 <div className="space-y-3 mb-6">
-                  {[
-                    {type:"bisnis",icon:<Building2 className="w-5 h-5"/>,title:"Bisnis / Perusahaan",desc:"Upload NIB atau link domain website resmi"},
-                    {type:"komunitas",icon:<Users className="w-5 h-5"/>,title:"Komunitas / Organisasi",desc:"Upload Impact Report atau bukti rekam jejak kegiatan"},
-                    {type:"individu",icon:<User className="w-5 h-5"/>,title:"Individu / Profesional",desc:"Upload KTP sebagai identitas resmi"},
-                  ].map(opt => (
-                    <button key={opt.type} onClick={() => setAccType(opt.type)} className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all ${accType === opt.type ? "border-[#C5A869] bg-[#FDFBF7]" : "border-gray-200 hover:border-gray-300"}`}>
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${accType === opt.type ? "bg-[#C5A869]/20 text-[#AA7C11]" : "bg-gray-100 text-gray-500"}`}>{opt.icon}</div>
-                      <div><p className="font-bold text-sm text-[#0F1A2F]">{opt.title}</p><p className="text-xs text-gray-500 mt-0.5">{opt.desc}</p></div>
+                  {accTypes.map(opt => (
+                    <button key={opt.type} onClick={() => setAccType(opt.type)} className={["w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all", accType === opt.type ? "border-[#C5A869] bg-[#FDFBF7]" : "border-gray-200"].join(" ")}>
+                      <div className={["w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0", accType === opt.type ? "bg-[#C5A869]/20 text-[#AA7C11]" : "bg-gray-100 text-gray-500"].join(" ")}>
+                        {opt.type === "bisnis" ? <Building2 className="w-5 h-5"/> : opt.type === "komunitas" ? <Users className="w-5 h-5"/> : <User className="w-5 h-5"/>}
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm text-[#0F1A2F]">{opt.title}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{opt.desc}</p>
+                      </div>
                       {accType === opt.type && <CheckCircle className="w-5 h-5 text-[#C5A869] ml-auto flex-shrink-0"/>}
                     </button>
                   ))}
                 </div>
                 <div className="flex gap-3">
-                  <button onClick={() => setStep(1)} className="flex-1 py-3 border-2 border-gray-200 text-gray-600 font-bold rounded-xl">← Kembali</button>
-                  <button onClick={() => { if(accType) setStep(3); }} className={`flex-1 py-3 font-bold rounded-xl transition ${accType ? "bg-[#0F1A2F] text-white hover:bg-[#1E2D4A]" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}>Lanjut →</button>
+                  <button onClick={() => setStep(1)} className="flex-1 py-3 border-2 border-gray-200 text-gray-600 font-bold rounded-xl">Kembali</button>
+                  <button onClick={() => { if(accType) setStep(3); }} className={["flex-1 py-3 font-bold rounded-xl transition", accType ? "bg-[#0F1A2F] text-white" : "bg-gray-200 text-gray-400 cursor-not-allowed"].join(" ")}>Lanjut</button>
                 </div>
               </div>
             )}
             {step === 3 && (
               <div>
-                <h3 className="text-2xl font-['Cardo'] font-bold text-[#0F1A2F] mb-2">Upload Dokumen Verifikasi</h3>
+                <h3 className="text-2xl font-bold text-[#0F1A2F] mb-2">Upload Dokumen Verifikasi</h3>
                 <p className="text-sm text-gray-500 mb-6">
-                  {accType === "bisnis" && "Upload NIB atau masukkan link domain website resmi."}
-                  {accType === "komunitas" && "Upload Impact Report atau bukti rekam jejak kegiatan."}
+                  {accType === "bisnis" && "Upload NIB atau link domain website resmi."}
+                  {accType === "komunitas" && "Upload Impact Report atau bukti rekam jejak."}
                   {accType === "individu" && "Upload foto KTP yang jelas dan terbaca."}
                 </p>
                 <div className="space-y-4 mb-6">
                   {accType === "bisnis" && (
-                    <div><label className="text-xs font-bold text-gray-600 uppercase block mb-1.5">Link Website Resmi (Alternatif NIB)</label>
-                    <input type="url" placeholder="https://namaentitas.com" className="w-full bg-[#FDFBF7] border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#C5A869]"/></div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-600 uppercase block mb-1.5">Link Website Resmi</label>
+                      <input type="url" placeholder="https://namaentitas.com" className="w-full bg-[#FDFBF7] border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#C5A869]"/>
+                    </div>
                   )}
                   <div>
-                    <label className="text-xs font-bold text-gray-600 uppercase block mb-1.5">
-                      {accType === "bisnis" ? "Upload NIB (PDF)" : accType === "komunitas" ? "Upload Impact Report (PDF)" : "Upload KTP (JPG/PNG)"}
-                    </label>
-                    <div onClick={() => setDocUploaded(true)} className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${docUploaded ? "border-emerald-400 bg-emerald-50" : "border-gray-300 hover:border-[#C5A869] hover:bg-[#FDFBF7]"}`}>
+                    <label className="text-xs font-bold text-gray-600 uppercase block mb-1.5">{docLabel}</label>
+                    <div onClick={() => setDocUploaded(true)} className={["border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all", docUploaded ? "border-emerald-400 bg-emerald-50" : "border-gray-300 hover:border-[#C5A869]"].join(" ")}>
                       {docUploaded
-                        ? <div><CheckCircle className="w-8 h-8 text-emerald-500 mx-auto mb-2"/><p className="text-sm font-bold text-emerald-700">Dokumen berhasil di-upload!</p></div>
-                        : <div><Upload className="w-8 h-8 text-gray-400 mx-auto mb-2"/><p className="text-sm font-medium text-gray-500">Klik untuk upload</p><p className="text-xs text-gray-400 mt-1">Maks. 5MB • PDF, JPG, PNG</p></div>
+                        ? <div><CheckCircle className="w-8 h-8 text-emerald-500 mx-auto mb-2"/><p className="text-sm font-bold text-emerald-700">Berhasil di-upload!</p></div>
+                        : <div><Upload className="w-8 h-8 text-gray-400 mx-auto mb-2"/><p className="text-sm text-gray-500">Klik untuk upload</p><p className="text-xs text-gray-400 mt-1">Maks. 5MB</p></div>
                       }
                     </div>
                   </div>
                 </div>
-                {docUploaded && <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4"><p className="text-xs text-amber-700 font-medium">⏳ Dokumen diverifikasi tim SynergyX dalam 1×24 jam. Badge <strong>Verified</strong> aktif setelah selesai.</p></div>}
+                {docUploaded && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+                    <p className="text-xs text-amber-700 font-medium">Dokumen diverifikasi tim SynergyX dalam 1x24 jam. Badge Verified aktif setelah selesai.</p>
+                  </div>
+                )}
                 <div className="flex gap-3">
-                  <button onClick={() => setStep(2)} className="flex-1 py-3 border-2 border-gray-200 text-gray-600 font-bold rounded-xl">← Kembali</button>
-                  <button onClick={() => navigateTo("feed")} className="flex-1 py-3 bg-[#0F1A2F] text-white font-bold rounded-xl hover:bg-[#1E2D4A] transition">Mulai Gunakan →</button>
+                  <button onClick={() => setStep(2)} className="flex-1 py-3 border-2 border-gray-200 text-gray-600 font-bold rounded-xl">Kembali</button>
+                  <button onClick={() => navigateTo("feed")} className="flex-1 py-3 bg-[#0F1A2F] text-white font-bold rounded-xl hover:bg-[#1E2D4A] transition">Mulai Gunakan</button>
                 </div>
               </div>
             )}
@@ -484,7 +508,6 @@ export default function App() {
           <p className="text-center text-sm text-gray-500 mt-6">Sudah punya akun? <button onClick={() => navigateTo("login")} className="text-[#C5A869] font-bold hover:underline">Sign In</button></p>
         </div>
       </div>
-    </div>
     );
   };
 
