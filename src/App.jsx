@@ -154,13 +154,6 @@ export default function App() {
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
 
-  useEffect(() => {
-    const link = document.createElement('link');
-    link.href = 'https://fonts.googleapis.com/css2?family=Cardo:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap';
-    link.rel = 'stylesheet';
-    document.head.appendChild(link);
-  }, []);
-
   const navigateTo = (view) => { setCurrentView(view); setIsMobileMenuOpen(false); setRightPanel(null); window.scrollTo(0, 0); };
   const toggleLike = (id) => setFeedItems(f => f.map(x => x.id === id ? { ...x, isLiked: !x.isLiked, likes: x.isLiked ? x.likes - 1 : x.likes + 1 } : x));
   const toggleSave = (id) => setFeedItems(f => f.map(x => x.id === id ? { ...x, isSaved: !x.isSaved, saves: x.isSaved ? x.saves - 1 : x.saves + 1 } : x));
@@ -901,7 +894,7 @@ export default function App() {
         participants: ['Budi Santoso (Teman Kreativ)', 'Reza (Digital Startups ID)'],
         summary: 'Meeting membahas skema barter value untuk kolaborasi media partner. Kedua pihak sepakat dengan 2x IG Feed Post dan 1 artikel liputan. Teman Kreativ akan mendapatkan voucher kopi senilai Rp 2.000.000.',
         keyPoints: ['Skema barter value disepakati kedua pihak','Teman Kreativ: 2x IG Feed Post + 1 Artikel','Digital Startups ID: Voucher kopi Rp 2.000.000 + logo di banner','Timeline pelaksanaan: bulan depan','PIC masing-masing akan sign MoU dalam 3 hari kerja'],
-        transcript: 'Budi: Halo Reza, terima kasih sudah join meeting ini...\nReza: Sama-sama Mas Budi. Kita langsung ke intinya ya...\n[dst - transcript otomatis tersimpan dari rekaman Google Meet]'
+        transcript: 'Budi: Halo Reza, terima kasih sudah join meeting ini... Reza: Sama-sama Mas Budi. Kita langsung ke intinya ya... [dst - transcript otomatis tersimpan dari rekaman Google Meet]'
       });
     };
 
