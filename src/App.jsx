@@ -99,6 +99,7 @@ export default function App() {
   const [viewingProfile, setViewingProfile] = useState(null);
   const [connectedUsers, setConnectedUsers] = useState([]);
   const [logoPreview, setLogoPreview] = useState(null);
+  const [logoFile, setLogoFile] = useState(null);
   // ── NEW V8: isVerified state untuk simulasi notifikasi verifikasi ──
   const [isVerified] = useState(true); // set false untuk lihat warning banner
 
@@ -208,6 +209,74 @@ export default function App() {
     </div>
   );
 
+  // ── MOBILE HEADER ────────────────────────────
+  const MobileHeader = () => (
+    <div className="md:hidden fixed top-0 w-full z-50 bg-[#0F1A2F] border-b border-[#C5A869]/20 h-14 flex items-center justify-between px-4 shadow-md">
+      <div className="flex items-center gap-2" onClick={() => navigateTo('feed')}>
+        <svg className="w-6 h-6" viewBox="0 0 100 100" fill="none"><path d="M50 5L95 50L50 95L5 50L50 5Z" stroke="#C5A869" strokeWidth="4" fill="none"/><path d="M50 18L82 50L50 82L18 50L50 18Z" fill="#2D4066" opacity="0.9"/></svg>
+        <span className="text-base font-bold text-[#C5A869] font-['Cardo']">SynergyX</span>
+      </div>
+      <button className="text-[#C5A869] p-1" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+        {isMobileMenuOpen ? <X className="w-5 h-5"/> : <Menu className="w-5 h-5"/>}
+      </button>
+    </div>
+  );
+
+  // ── COLLAB CARD ────────────────────────────────
+  const CollabCard = ({ data, onApply }) => (
+    <div className="bg-white border border-gray-200 rounded-2xl p-4 md:p-6 hover:shadow-xl hover:shadow-[#0F1A2F]/5 transition-all duration-300 mb-4">
+      {data.connectionPost && (
+        <div className="flex items-center gap-1.5 text-[10px] text-[#C5A869] font-bold uppercase tracking-widest mb-2">
+          <Link className="w-3 h-3"/> Dari Koneksi Anda
+        </div>
+      )}
+      <div className="flex justify-between items-start mb-3">
+        <div className="flex items-center gap-3">
+          <button onClick={() => setViewingProfile(data)} className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-[#0F1A2F] to-[#2D4066] flex items-center justify-center font-bold text-[#C5A869] text-sm md:text-base flex-shrink-0 hover:ring-2 hover:ring-[#C5A869] transition-all cursor-pointer">{data.avatar}</button>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <button onClick={() => setViewingProfile(data)} className="text-[#0F1A2F] font-bold text-sm hover:text-[#C5A869] transition-colors">{data.brand}</button>
+              {data.verified && <CheckCircle className="w-3.5 h-3.5 text-blue-500"/>}
+            </div>
+            <p className="text-xs text-gray-400">{data.author} • {data.authorRole}</p>
+          </div>
+        </div>
+        <span className="text-xs text-gray-400 flex-shrink-0 ml-2">{data.time}</span>
+      </div>
+      <p className="text-gray-600 text-sm leading-relaxed mb-4">{data.narration}</p>
+      <div className="bg-[#FDFBF7] border border-[#C5A869]/30 rounded-xl p-4 mb-4 border-l-4 border-l-[#C5A869]">
+        <div className="flex flex-wrap gap-2 mb-3">
+          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-[#0F1A2F] text-white">{data.type}</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-[#C5A869]/10 text-[#AA7C11] border border-[#C5A869]/30">{data.scheme}</span>
+        </div>
+        <h3 className="text-base md:text-lg font-['Cardo'] font-bold text-[#0F1A2F] mb-3">{data.title}</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
+            <span className="text-xs text-[#C5A869] font-bold block mb-1">Benefit Mitra:</span>
+            <p className="text-xs text-gray-600 leading-relaxed">{data.give}</p>
+          </div>
+          <div className="bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
+            <span className="text-xs text-[#0F1A2F] font-bold block mb-1">Kewajiban Mitra:</span>
+            <p className="text-xs text-gray-600 leading-relaxed">{data.expect}</p>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+        <div className="flex items-center gap-4">
+          <button onClick={() => toggleLike(data.id)} className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${data.isLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`}>
+            <Heart className={`w-4 h-4 ${data.isLiked ? 'fill-current' : ''}`}/> {data.likes}
+          </button>
+          <button onClick={() => toggleSave(data.id)} className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${data.isSaved ? 'text-[#C5A869]' : 'text-gray-400 hover:text-[#C5A869]'}`}>
+            <Bookmark className={`w-4 h-4 ${data.isSaved ? 'fill-current' : ''}`}/> {data.saves}
+          </button>
+        </div>
+        <button onClick={() => onApply(data)} className="flex items-center gap-2 px-4 py-2 bg-[#0F1A2F] text-white text-xs font-bold rounded-lg hover:bg-[#1E2D4A] transition-colors shadow-md">
+          <Send className="w-3.5 h-3.5"/> Ajukan Proposal
+        </button>
+      </div>
+    </div>
+  );
+
   // ── DASHBOARD VIEW ────────────────────────────
   // FIXED V8: Dashboard sekarang fully functional dengan semua 15 metrik
   const DashboardView = () => {
@@ -269,39 +338,54 @@ export default function App() {
   // ── LANDING VIEW ──────────────────────────────
   const LandingView = () => (
     <div className="min-h-screen bg-[#0A1628] relative flex flex-col overflow-hidden">
-      {/* ... sama seperti V7, tidak diubah ... */}
+      <div className="absolute top-0 right-0 w-96 md:w-[600px] h-96 md:h-[600px] rounded-full bg-gradient-to-bl from-[#C5A869]/10 to-transparent blur-3xl pointer-events-none"/>
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1A2744_1px,transparent_1px),linear-gradient(to_bottom,#1A2744_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20 pointer-events-none"/>
       <header className="relative z-10 flex justify-between items-center px-5 md:px-10 py-5">
         <div className="flex items-center gap-3">
-          <svg className="w-9 h-9" viewBox="0 0 100 100" fill="none">
-            <path d="M50 5L95 50L50 95L5 50L50 5Z" stroke="#C5A869" strokeWidth="4" fill="none"/>
-            <path d="M50 18L82 50L50 82L18 50L50 18Z" fill="#1A2744" opacity="0.9"/>
-          </svg>
-          <span className="text-2xl font-bold tracking-wider text-[#C5A869] font-['Cardo']">SynergyX</span>
+          <svg className="w-8 h-8 md:w-9 md:h-9" viewBox="0 0 100 100" fill="none"><path d="M50 5L95 50L50 95L5 50L50 5Z" stroke="#C5A869" strokeWidth="4" fill="none"/><path d="M50 18L82 50L50 82L18 50L50 18Z" fill="#1A2744" opacity="0.9"/></svg>
+          <span className="text-xl md:text-2xl font-bold tracking-wider text-[#C5A869] font-['Cardo']">SynergyX</span>
         </div>
-        <button onClick={() => navigateTo('login')}
-          className="text-sm font-bold text-[#C5A869] border border-[#C5A869]/40 px-4 py-2 rounded-lg hover:bg-[#C5A869]/10 transition">
-          Sign In
-        </button>
+        <button onClick={() => navigateTo('login')} className="text-sm font-bold text-[#C5A869] border border-[#C5A869]/40 px-4 py-2 rounded-lg hover:bg-[#C5A869]/10 transition">Sign In</button>
       </header>
-      <section className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-5 py-16">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#C5A869]/10 border border-[#C5A869]/30 text-[#C5A869] text-xs font-bold uppercase mb-7">
-          ✦ Ekosistem Kolaborasi B2B Terkurasi
+      <section className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-5 py-16 md:py-24">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#C5A869]/10 border border-[#C5A869]/30 text-[#C5A869] text-xs font-bold tracking-wider uppercase mb-7">
+          <Sparkles className="w-3.5 h-3.5"/> Ekosistem Kolaborasi B2B Terkurasi
         </div>
-        <h1 className="text-4xl md:text-6xl font-['Cardo'] font-bold text-white leading-tight mb-5 max-w-4xl">
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-['Cardo'] font-bold text-white leading-tight mb-5 max-w-4xl">
           Cari Mitra Kolaborasi?<br/><span className="text-[#C5A869]">Selesaikan dalam Hitungan Menit.</span>
         </h1>
         <p className="text-gray-400 text-base md:text-lg mb-8 max-w-2xl leading-relaxed">
-          Platform satu pintu untuk mempertemukan agensi, brand, komunitas, dan pihak kemitraan strategis.
+          Platform satu pintu untuk mempertemukan agensi, brand, Community, dan pihak-pihak kemitraan strategis. Kami menyederhanakan proses kolaborasi agar Anda bisa fokus menutup deal lebih cepat dan mencapai target pertumbuhan bisnis dengan lebih terukur.
         </p>
+        <div className="mt-2 mb-8 grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl w-full text-left">
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 backdrop-blur-sm">
+            <div className="flex items-center gap-2 mb-3 text-red-400"><AlertCircle className="w-5 h-5"/><span className="font-bold text-xs uppercase tracking-wide">Pain Point</span></div>
+            {['Sulit menemukan mitra yang relevan & terpercaya','Tidak ada jaminan komitmen & pembayaran aman','Proses negosiasi manual, lambat, dan rawan miskomunikasi'].map(t => (
+              <div key={t} className="flex items-start gap-2 mb-2"><span className="text-red-400 mt-0.5 flex-shrink-0">✕</span><span className="text-sm text-gray-300">{t}</span></div>
+            ))}
+          </div>
+          <div className="bg-[#C5A869]/5 border border-[#C5A869]/20 rounded-2xl p-5 backdrop-blur-sm">
+            <div className="flex items-center gap-2 mb-3 text-[#C5A869]"><CheckCircle className="w-5 h-5"/><span className="font-bold text-xs uppercase tracking-wide">Solusi SynergyX</span></div>
+            {['Discovery feed kolaborasi B2B yang dikurasi dan terverifikasi','Escrow system untuk keamanan dana sponsorship','MoU digital, LPJ, e-Sign & auto-scheduling meeting'].map(t => (
+              <div key={t} className="flex items-start gap-2 mb-2"><span className="text-[#C5A869] mt-0.5 flex-shrink-0">✓</span><span className="text-sm text-gray-200">{t}</span></div>
+            ))}
+          </div>
+        </div>
         <div className="flex flex-col sm:flex-row gap-3">
-          <button onClick={() => navigateTo('register')}
-            className="px-7 py-3.5 rounded-xl bg-[#C5A869] text-[#0F1A2F] font-bold shadow-xl hover:-translate-y-1 transition-all duration-300 text-base">
-            Daftar ke SynergyX →
+          <button onClick={() => navigateTo('register')} className="px-7 py-3.5 rounded-xl bg-[#C5A869] text-[#0F1A2F] font-bold tracking-wide shadow-xl hover:-translate-y-1 transition-all duration-300 text-base flex items-center justify-center gap-2">
+            Daftar ke SynergyX <ArrowRight className="w-4 h-4"/>
           </button>
-          <button onClick={() => navigateTo('login')}
-            className="px-7 py-3.5 rounded-xl border border-white/20 text-white font-bold hover:bg-white/5 transition text-base">
+          <button onClick={() => navigateTo('login')} className="px-7 py-3.5 rounded-xl border border-white/20 text-white font-bold hover:bg-white/5 transition text-base">
             Lihat Demo
           </button>
+        </div>
+        <div className="mt-12 flex flex-wrap justify-center gap-8 text-center">
+          {[['500+','Bisnis Terdaftar'],['1.200+','Kolaborasi Berhasil'],['Rp 2M+','Dana via Escrow']].map(([val, label]) => (
+            <div key={label}>
+              <div className="text-2xl font-['Cardo'] font-bold text-[#C5A869]">{val}</div>
+              <div className="text-xs text-gray-400 font-medium mt-1">{label}</div>
+            </div>
+          ))}
         </div>
       </section>
     </div>
