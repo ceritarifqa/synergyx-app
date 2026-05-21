@@ -59,6 +59,14 @@ const MOCK_ACTIVE_COLLABS = [
   { id: 201, type: "Community Partner", scheme: "Barter Value", title: "Kolaborasi Komunitas: Ngabuburit Kreatif", give: "Slot booth gratis, logo on screen, mention MC.", expect: "Membawa minimal 20 member komunitas, 1x IG Post collab." }
 ];
 
+const MOCK_ANALYTICS = {
+  proposalReceived: 8, proposalSent: 12, proposalPending: 3, proposalRejected: 2,
+  proposalApproved: 7, accountViews30: 3420, totalConnections: 128, totalFeedPost: 6,
+  totalLikes: 89, totalSaved: 31, totalAppointment: 14, totalMeetingDone: 11,
+  totalDeal: 9, totalMouGenerated: 9, totalLpjGenerated: 7,
+  totalSponsorshipFreshMoney: 45000000, totalSponsorshipBarter: 12
+};
+
 const formatRp = (n) => 'Rp ' + Number(n).toLocaleString('id-ID');
 const generateMeetLink = () => {
   const chars = 'abcdefghijklmnopqrstuvwxyz';
@@ -88,6 +96,7 @@ export default function App() {
   const [meetTranscript, setMeetTranscript] = useState(null);
   // ── CHANGED V8: viewingPartnerProfile sekarang menyimpan full partner object (bukan popup) ──
   const [viewingPartnerProfile, setViewingPartnerProfile] = useState(null);
+  const [viewingProfile, setViewingProfile] = useState(null);
   const [connectedUsers, setConnectedUsers] = useState([]);
   const [logoPreview, setLogoPreview] = useState(null);
   // ── NEW V8: isVerified state untuk simulasi notifikasi verifikasi ──
@@ -111,6 +120,10 @@ export default function App() {
 
   const toggleLike = (id) => setFeedItems(f => f.map(x => x.id === id ? { ...x, isLiked: !x.isLiked, likes: x.isLiked ? x.likes - 1 : x.likes + 1 } : x));
   const toggleSave = (id) => setFeedItems(f => f.map(x => x.id === id ? { ...x, isSaved: !x.isSaved, saves: x.isSaved ? x.saves - 1 : x.saves + 1 } : x));
+  const handleConnect = (partner) => {
+    if (partner && !connectedUsers.includes(partner.id)) setConnectedUsers(u => [...u, partner.id]);
+    setViewingProfile(null);
+  };
 
   const filteredFeed = feedItems.filter(x => {
     if (filterConn && !x.connectionPost) return false;
@@ -1287,6 +1300,41 @@ export default function App() {
             <p className="text-sm text-gray-600 italic">"{r.text}"</p>
           </div>
         ))}
+      </div>
+    </div>
+  );
+
+  // ── PARTNER PROFILE VIEW ─────────────────────
+  const PartnerProfileView = ({ partner }) => (
+    <div className="p-6 max-w-2xl mx-auto">
+      <button onClick={() => setViewingPartnerProfile(null)} className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#0F1A2F] mb-6 font-medium">
+        <ArrowLeft className="w-4 h-4"/> Kembali ke Feed
+      </button>
+      <div className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="h-24 bg-gradient-to-r from-[#0F1A2F] to-[#2D4066]"/>
+        <div className="px-6 pb-6 relative">
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#0F1A2F] to-[#2D4066] border-4 border-white text-[#C5A869] font-bold text-2xl flex items-center justify-center absolute -top-10 shadow-lg">{partner?.avatar}</div>
+          <div className="mt-12">
+            <div className="flex items-center gap-2 mb-1">
+              <h2 className="text-2xl font-['Cardo'] font-bold text-[#0F1A2F]">{partner?.brand}</h2>
+              {partner?.verified && <CheckCircle className="w-5 h-5 text-blue-500"/>}
+            </div>
+            <p className="text-sm text-gray-500 mb-1">{partner?.author} — {partner?.authorRole}</p>
+            <p className="text-xs text-[#C5A869] font-bold uppercase tracking-wide mb-4">{partner?.type} • {partner?.scheme}</p>
+            <div className="bg-[#FDFBF7] rounded-2xl p-4 border border-gray-100 mb-4">
+              <p className="text-sm font-bold text-[#0F1A2F] mb-1">Yang Ditawarkan</p>
+              <p className="text-sm text-gray-600">{partner?.give}</p>
+            </div>
+            <div className="bg-[#FDFBF7] rounded-2xl p-4 border border-gray-100 mb-4">
+              <p className="text-sm font-bold text-[#0F1A2F] mb-1">Yang Diharapkan</p>
+              <p className="text-sm text-gray-600">{partner?.expect}</p>
+            </div>
+            <button onClick={() => { setSelectedCard(partner); setShowProposalModal(true); setViewingPartnerProfile(null); }}
+              className="w-full py-3.5 bg-[#0F1A2F] text-white font-bold rounded-xl hover:bg-[#1E2D4A] shadow-lg transition-all">
+              Kirim Proposal
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
