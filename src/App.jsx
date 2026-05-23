@@ -195,6 +195,18 @@ export default function App() {
   const [showVerificationBanner, setShowVerificationBanner] = useState(false);
   const [viewHistory, setViewHistory] = useState([]);
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showNotifPanel, setShowNotifPanel] = useState(false);
+  const [notifRead, setNotifRead] = useState([]);
+
+  const MOCK_NOTIFS = [
+    { id:1, type:'proposal_received', icon:'📩', title:'Proposal Baru Masuk', body:'Digital Startups ID mengirim proposal untuk Media Partner Promo Akhir Tahun.', time:'2 menit lalu', read:false, action:'proposals' },
+    { id:2, type:'appointment', icon:'📅', title:'Appointment Dikonfirmasi', body:'EduMaster Platform mengkonfirmasi meeting: 22 Mei 2026 • 10:00 WIB.', time:'1 jam lalu', read:false, action:'proposals' },
+    { id:3, type:'chat', icon:'💬', title:'Pesan Baru dari TechNova', body:'Andi: "Sip, MoU sudah kita review ya. Kapan bisa tanda tangan?"', time:'3 jam lalu', read:false, action:'chat' },
+    { id:4, type:'proposal_accepted', icon:'✅', title:'Proposal Diterima!', body:'EduMaster Platform menerima proposal Afiliasi Sertifikasi IT Anda.', time:'1 hari lalu', read:false, action:'proposals' },
+    { id:5, type:'proposal_rejected', icon:'❌', title:'Proposal Ditolak', body:'Kopi Kenangan Senja menolak proposal Media Partner. Coba kirim ulang dengan penawaran lebih spesifik.', time:'2 hari lalu', read:true, action:'proposals' },
+    { id:6, type:'connection', icon:'🤝', title:'Koneksi Baru', body:'Kreasi Nusantara (Bima Sakti) menerima permintaan koneksi Anda.', time:'3 hari lalu', read:true, action:'feed' },
+    { id:7, type:'deal', icon:'🎉', title:'DEAL Terkonfirmasi!', body:'Kolaborasi dengan TechNova Solutions (Tech Future Summit 2026) resmi berstatus DEAL.', time:'5 hari lalu', read:true, action:'proposals' },
+  ];
 
   useEffect(() => {
     const link = document.createElement('link');
@@ -1219,9 +1231,52 @@ export default function App() {
     </div>
   );
 
+  // ── NOTIFICATION PANEL ────────────────────────
+  const NotifPanel = () => {
+    const unread = MOCK_NOTIFS.filter(n => !notifRead.includes(n.id) && !n.read).length;
+    return (
+      <div className="fixed inset-0 z-50 flex justify-end" onClick={() => setShowNotifPanel(false)}>
+        <div className="w-full max-w-sm bg-white h-full shadow-2xl flex flex-col border-l border-gray-200" onClick={e => e.stopPropagation()}>
+          <div className="p-5 border-b border-gray-100 bg-[#0F1A2F] flex items-center justify-between flex-shrink-0">
+            <div>
+              <h3 className="font-['Cardo'] font-bold text-white text-lg">Notifikasi</h3>
+              {unread > 0 && <p className="text-xs text-[#C5A869] font-bold mt-0.5">{unread} belum dibaca</p>}
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setNotifRead(MOCK_NOTIFS.map(n=>n.id))} className="text-[10px] text-[#C5A869] font-bold hover:underline">Tandai semua</button>
+              <button onClick={() => setShowNotifPanel(false)} className="text-gray-400 hover:text-white p-1"><X className="w-5 h-5"/></button>
+            </div>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {MOCK_NOTIFS.map(notif => {
+              const isRead = notifRead.includes(notif.id) || notif.read;
+              return (
+                <div key={notif.id} onClick={() => { setNotifRead(p=>[...p,notif.id]); setShowNotifPanel(false); navigateTo(notif.action); }} className={`p-4 border-b border-gray-50 cursor-pointer hover:bg-gray-50 transition-colors flex gap-3 items-start ${!isRead ? 'bg-blue-50/50' : ''}`}>
+                  <div className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-lg flex-shrink-0 shadow-sm">{notif.icon}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className={`text-sm font-bold text-[#0F1A2F] leading-tight ${!isRead ? 'text-[#0F1A2F]' : 'text-gray-600'}`}>{notif.title}</p>
+                      {!isRead && <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1"/>}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1 leading-relaxed">{notif.body}</p>
+                    <p className="text-[10px] text-gray-400 font-medium mt-1.5">{notif.time}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="p-4 border-t border-gray-100 bg-[#FDFBF7]">
+            <button className="w-full py-2.5 text-xs font-bold text-[#0F1A2F] border border-gray-200 rounded-xl hover:bg-white transition">Lihat Semua Aktivitas →</button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // ── DASHBOARD (Standalone full-screen with own sidebar) ──
   const DashboardView = () => {
     const [dashTab, setDashTab] = useState('overview');
+    const unreadNotifCount = MOCK_NOTIFS.filter(n => !notifRead.includes(n.id) && !n.read).length;
     const sidebarItems = [
       { id:'overview', icon:<Home className="w-4 h-4"/>, label:'Overview' },
       { id:'published', icon:<Upload className="w-4 h-4"/>, label:'Proposal Published' },
@@ -1270,6 +1325,10 @@ export default function App() {
             ))}
           </div>
           <div className="border-t border-[#2D4066]/50 pt-4">
+            <button onClick={() => setShowNotifPanel(true)} className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium text-gray-300 hover:bg-[#2D4066]/50 hover:text-white transition-all mb-2">
+              <div className="flex items-center gap-3"><Bell className="w-4 h-4"/> Notifikasi</div>
+              {unreadNotifCount > 0 && <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">{unreadNotifCount}</span>}
+            </button>
             <div className="flex items-center gap-2 px-2 mb-2">
               <div className="w-9 h-9 rounded-full bg-[#C5A869] text-[#0F1A2F] font-bold text-sm flex items-center justify-center flex-shrink-0">TK</div>
               <div><p className="text-white font-bold text-xs">Teman Kreativ</p><div className="flex items-center gap-1"><CheckCircle className="w-3 h-3 text-blue-400"/><span className="text-[9px] text-blue-400">Verified Account</span></div></div>
@@ -1458,6 +1517,290 @@ export default function App() {
                 </div>
               </div>
               <p className="text-right text-[10px] text-gray-400 mt-4">Data diperbarui: 31 Mei 2025 23:59 WIB</p>
+            </div>
+          ) : dashTab === 'published' ? (
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-5">
+                <div><h2 className="text-xl font-bold text-[#0F1A2F]">Proposal Published</h2><p className="text-xs text-gray-400 mt-0.5">Daftar peluang kolaborasi yang kamu publish ke feed</p></div>
+                <button onClick={() => navigateTo('create')} className="flex items-center gap-1.5 px-4 py-2 bg-[#0F1A2F] text-white text-xs font-bold rounded-xl hover:bg-[#1E2D4A] transition"><PlusCircle className="w-3.5 h-3.5"/> Buat Baru</button>
+              </div>
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[700px]">
+                    <thead><tr className="bg-[#FDFBF7] border-b border-gray-100">{['Judul Peluang','Tipe','Skema','Proposal Masuk','Status','Deal','Aksi'].map(h=><th key={h} className="text-left px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">{h}</th>)}</tr></thead>
+                    <tbody>
+                      {[
+                        { title:'Sponsor Utama Tech Future Summit 2026', type:'Sponsorship', scheme:'Fresh Money', received:24, status:'active', deal:1 },
+                        { title:'Kolaborasi Media Partner Promo Akhir Tahun', type:'Media Partner', scheme:'Barter Value', received:18, status:'active', deal:0 },
+                        { title:'Fun Bike to Home – Community Support', type:'Community Partner', scheme:'Discount', received:9, status:'active', deal:2 },
+                        { title:'Afiliasi Kelas Sertifikasi IT Nasional', type:'Strategic Partner', scheme:'Referral', received:31, status:'closed', deal:3 },
+                        { title:'Ngabuburit Kreatif – Kolaborasi Komunitas', type:'Community Partner', scheme:'Barter Value', received:15, status:'closed', deal:1 },
+                        { title:'Demo Day Cohort 14 – Lead Sponsor', type:'Sponsorship', scheme:'Fresh Money', received:7, status:'draft', deal:0 },
+                      ].map((row,i) => (
+                        <tr key={i} className="border-b border-gray-50 hover:bg-[#FDFBF7] transition">
+                          <td className="px-4 py-3"><p className="text-sm font-bold text-[#0F1A2F] max-w-[200px]">{row.title}</p></td>
+                          <td className="px-4 py-3"><span className="text-[10px] font-bold bg-[#0F1A2F] text-white px-2 py-1 rounded">{row.type}</span></td>
+                          <td className="px-4 py-3"><span className="text-[10px] font-bold bg-[#C5A869]/10 text-[#AA7C11] border border-[#C5A869]/30 px-2 py-1 rounded">{row.scheme}</span></td>
+                          <td className="px-4 py-3 text-sm font-bold text-[#0F1A2F]">{row.received} <span className="text-gray-400 font-medium text-xs">proposal</span></td>
+                          <td className="px-4 py-3">{row.status==='active'&&<span className="text-[10px] font-bold px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">Aktif</span>}{row.status==='closed'&&<span className="text-[10px] font-bold px-2 py-1 rounded-full bg-gray-100 text-gray-500">Selesai</span>}{row.status==='draft'&&<span className="text-[10px] font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-600">Draft</span>}</td>
+                          <td className="px-4 py-3 text-sm font-bold text-[#0F1A2F]">{row.deal}</td>
+                          <td className="px-4 py-3"><button className="text-[10px] font-bold text-[#C5A869] hover:underline">Detail →</button></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          ) : dashTab === 'sent' ? (
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-5">
+                <div><h2 className="text-xl font-bold text-[#0F1A2F]">Proposal Sent</h2><p className="text-xs text-gray-400 mt-0.5">Proposal yang kamu kirim ke peluang kolaborasi brand lain</p></div>
+                <button onClick={() => navigateTo('feed')} className="flex items-center gap-1.5 px-4 py-2 bg-[#0F1A2F] text-white text-xs font-bold rounded-xl hover:bg-[#1E2D4A] transition"><Search className="w-3.5 h-3.5"/> Cari Peluang</button>
+              </div>
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[680px]">
+                    <thead><tr className="bg-[#FDFBF7] border-b border-gray-100">{['Ditujukan Ke','Judul Peluang','Tanggal Kirim','Status','Meeting','Tindakan'].map(h=><th key={h} className="text-left px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">{h}</th>)}</tr></thead>
+                    <tbody>
+                      {[
+                        { to:'TechNova Solutions', av:'TN', title:'Sponsor Utama Tech Future Summit 2026', date:'18 Mei 2026', status:'on_review', meet:null },
+                        { to:'EduMaster Platform', av:'EM', title:'Afiliasi Kelas Sertifikasi IT', date:'15 Mei 2026', status:'accepted', meet:'22 Mei 2026 • 10:00 WIB' },
+                        { to:'Kopi Kenangan Senja', av:'KS', title:'Media Partner Promo Akhir Tahun', date:'12 Mei 2026', status:'rejected', meet:null },
+                        { to:'Griya Lestari', av:'GL', title:'Fun Bike to Home Partnership', date:'10 Mei 2026', status:'accepted', meet:'20 Mei 2026 • 14:00 WIB' },
+                        { to:'Startup Bootcamp ID', av:'SB', title:'Demo Day Cohort 14 – Co-Sponsor', date:'5 Mei 2026', status:'on_review', meet:null },
+                        { to:'Local Sounds Festival', av:'LS', title:'Ticketing Partner Musik Indie', date:'1 Mei 2026', status:'rejected', meet:null },
+                      ].map((row,i) => (
+                        <tr key={i} className="border-b border-gray-50 hover:bg-[#FDFBF7] transition">
+                          <td className="px-4 py-3"><div className="flex items-center gap-2"><div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0F1A2F] to-[#2D4066] text-[#C5A869] text-[10px] font-bold flex items-center justify-center flex-shrink-0">{row.av}</div><span className="text-sm font-bold text-[#0F1A2F]">{row.to}</span></div></td>
+                          <td className="px-4 py-3"><p className="text-sm text-gray-700 max-w-[160px] truncate">{row.title}</p></td>
+                          <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">{row.date}</td>
+                          <td className="px-4 py-3">{row.status==='on_review'&&<span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-600"><Clock className="w-3 h-3"/> Review</span>}{row.status==='accepted'&&<span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full bg-emerald-100 text-emerald-700"><CheckCircle className="w-3 h-3"/> Diterima</span>}{row.status==='rejected'&&<span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full bg-red-100 text-red-600"><X className="w-3 h-3"/> Ditolak</span>}</td>
+                          <td className="px-4 py-3">{row.meet ? <p className="text-xs font-bold text-[#0F1A2F]">{row.meet}</p> : <span className="text-xs text-gray-400">—</span>}</td>
+                          <td className="px-4 py-3">{row.status==='accepted'?<button className="text-[10px] font-bold text-[#C5A869] hover:underline">Chat PIC →</button>:row.status==='rejected'?<button className="text-[10px] font-bold text-gray-400 hover:underline">Kirim Ulang</button>:<span className="text-[10px] text-gray-400">Menunggu</span>}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          ) : dashTab === 'connections' ? (
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-5">
+                <div><h2 className="text-xl font-bold text-[#0F1A2F]">Connections</h2><p className="text-xs text-gray-400 mt-0.5">128 koneksi di ekosistem SynergyX</p></div>
+                <button onClick={() => navigateTo('feed')} className="flex items-center gap-1.5 px-4 py-2 border border-gray-200 bg-white text-xs font-bold rounded-xl hover:bg-gray-50 text-gray-700 transition"><Search className="w-3.5 h-3.5"/> Cari Partner</button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  { logo:'TN', name:'TechNova Solutions', role:'Andi Wijaya • CEO', industry:'Teknologi & SaaS', mutual:12, verified:true, connected:'2 Apr 2026' },
+                  { logo:'EM', name:'EduMaster Platform', role:'Rizky Ramadhan • Growth Lead', industry:'Edukasi & EdTech', mutual:8, verified:true, connected:'15 Apr 2026' },
+                  { logo:'KN', name:'Kreasi Nusantara', role:'Bima Sakti • Creative Director', industry:'Creative Agency', mutual:5, verified:true, connected:'20 Apr 2026' },
+                  { logo:'SB', name:'Startup Bootcamp ID', role:'Lena Hartono • Program Director', industry:'Startup Ecosystem', mutual:15, verified:true, connected:'1 Mei 2026' },
+                  { logo:'GL', name:'Griya Lestari', role:'Sarah Ayu • Marketing Manager', industry:'Properti', mutual:3, verified:true, connected:'5 Mei 2026' },
+                  { logo:'KS', name:'Kopi Kenangan Senja', role:'Nabila Rahma • Partnership SPV', industry:'F&B', mutual:2, verified:false, connected:'8 Mei 2026' },
+                  { logo:'DS', name:'Digital Startups ID', role:'Reza Pratama • BD Manager', industry:'Media & Komunitas', mutual:7, verified:true, connected:'10 Mei 2026' },
+                  { logo:'IK', name:'Inovasi Kreasi Hub', role:'Diana Permata • Co-Founder', industry:'Creative Economy', mutual:4, verified:false, connected:'12 Mei 2026' },
+                  { logo:'BJ', name:'Bank Jago', role:'Hendra Wirawan • Partnership', industry:'Fintech & Banking', mutual:11, verified:true, connected:'17 Mei 2026' },
+                ].map((c,i) => (
+                  <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center text-center">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#0F1A2F] to-[#2D4066] text-[#C5A869] font-bold text-lg font-['Cardo'] flex items-center justify-center mb-3 shadow-inner">{c.logo}</div>
+                    <div className="flex items-center gap-1 mb-0.5"><h4 className="font-bold text-sm text-[#0F1A2F]">{c.name}</h4>{c.verified && <CheckCircle className="w-3.5 h-3.5 text-blue-500 flex-shrink-0"/>}</div>
+                    <p className="text-xs text-gray-400 mb-1">{c.role}</p>
+                    <span className="text-[10px] bg-[#0F1A2F]/5 text-[#0F1A2F] px-2 py-0.5 rounded-full font-medium mb-2">{c.industry}</span>
+                    <p className="text-[10px] text-gray-400 mb-3">{c.mutual} mutual koneksi • Terhubung {c.connected}</p>
+                    <div className="flex gap-2 w-full">
+                      <button onClick={() => navigateTo('chat')} className="flex-1 py-1.5 text-[10px] font-bold border border-gray-200 rounded-lg hover:bg-gray-50 transition text-gray-600">Pesan</button>
+                      <button className="flex-1 py-1.5 text-[10px] font-bold bg-[#0F1A2F] text-white rounded-lg hover:bg-[#1E2D4A] transition">Lihat Profil</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : dashTab === 'appointments' ? (
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-5">
+                <div><h2 className="text-xl font-bold text-[#0F1A2F]">Appointments</h2><p className="text-xs text-gray-400 mt-0.5">Jadwal meeting dan follow-up dengan calon partner</p></div>
+              </div>
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+                <div className="px-5 py-3 border-b border-gray-100 bg-[#FDFBF7]"><h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Mendatang</h3></div>
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[640px]">
+                    <thead><tr className="border-b border-gray-50">{['Partner','Tujuan','Tanggal & Waktu','Platform','Status','Aksi'].map(h=><th key={h} className="text-left px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">{h}</th>)}</tr></thead>
+                    <tbody>
+                      {[
+                        { av:'EM', name:'EduMaster Platform', pic:'Rizky Ramadhan', goal:'Finalisasi skema referral & komisi afiliasi', date:'22 Mei 2026', time:'10:00 WIB', link:'meet.google.com/edu-syx-abc', status:'upcoming' },
+                        { av:'GL', name:'Griya Lestari', pic:'Sarah Ayu', goal:'Presentasi proposal Fun Bike to Home', date:'25 Mei 2026', time:'13:30 WIB', link:'meet.google.com/gri-les-xyz', status:'upcoming' },
+                        { av:'TN', name:'TechNova Solutions', pic:'Andi Wijaya', goal:'Review draft MoU Tech Future Summit 2026', date:'28 Mei 2026', time:'09:00 WIB', link:'meet.google.com/tec-nov-lmn', status:'upcoming' },
+                      ].map((row,i) => (
+                        <tr key={i} className="border-b border-gray-50 hover:bg-[#FDFBF7] transition">
+                          <td className="px-4 py-3"><div className="flex items-center gap-2"><div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0F1A2F] to-[#2D4066] text-[#C5A869] text-[10px] font-bold flex items-center justify-center flex-shrink-0">{row.av}</div><div><p className="text-sm font-bold text-[#0F1A2F]">{row.name}</p><p className="text-[10px] text-gray-400">{row.pic}</p></div></div></td>
+                          <td className="px-4 py-3 max-w-[180px]"><p className="text-xs text-gray-600 truncate">{row.goal}</p></td>
+                          <td className="px-4 py-3 whitespace-nowrap"><p className="text-sm font-bold text-[#0F1A2F]">{row.date}</p><p className="text-xs text-gray-400">{row.time}</p></td>
+                          <td className="px-4 py-3"><a href="#" className="text-xs text-blue-600 flex items-center gap-1 hover:underline font-medium"><ExternalLink className="w-3 h-3"/>{row.link}</a></td>
+                          <td className="px-4 py-3"><span className="text-[10px] font-bold px-2 py-1 rounded-full bg-blue-100 text-blue-700">Terjadwal</span></td>
+                          <td className="px-4 py-3"><button onClick={() => navigateTo('proposals')} className="text-[10px] font-bold text-[#C5A869] hover:underline">Detail →</button></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="px-5 py-3 border-b border-gray-100 bg-[#FDFBF7]"><h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Selesai (Histori)</h3></div>
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[640px]">
+                    <thead><tr className="border-b border-gray-50">{['Partner','Tujuan','Tanggal','Hasil','Catatan'].map(h=><th key={h} className="text-left px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">{h}</th>)}</tr></thead>
+                    <tbody>
+                      {[
+                        { av:'KN', name:'Kreasi Nusantara', goal:'Diskusi kolaborasi branding', date:'10 Mei 2026', result:'deal', note:'Sepakat barter full branding untuk exposure event.' },
+                        { av:'SB', name:'Startup Bootcamp ID', goal:'Presentasi sponsorship Demo Day', date:'3 Mei 2026', result:'follow_up', note:'Perlu approval dari CFO. Follow-up 30 Mei 2026.' },
+                        { av:'KS', name:'Kopi Kenangan Senja', goal:'Negosiasi media partner', date:'28 Apr 2026', result:'no_deal', note:'Budget tidak sesuai. Tidak lanjut.' },
+                      ].map((row,i) => (
+                        <tr key={i} className="border-b border-gray-50 hover:bg-[#FDFBF7] transition">
+                          <td className="px-4 py-3"><div className="flex items-center gap-2"><div className="w-8 h-8 rounded-full bg-gray-100 text-gray-600 text-[10px] font-bold flex items-center justify-center flex-shrink-0">{row.av}</div><span className="text-sm font-bold text-gray-600">{row.name}</span></div></td>
+                          <td className="px-4 py-3 max-w-[160px]"><p className="text-xs text-gray-500 truncate">{row.goal}</p></td>
+                          <td className="px-4 py-3 text-xs text-gray-400">{row.date}</td>
+                          <td className="px-4 py-3">{row.result==='deal'&&<span className="text-[10px] font-bold px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">DEAL ✓</span>}{row.result==='follow_up'&&<span className="text-[10px] font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-600">Follow-Up</span>}{row.result==='no_deal'&&<span className="text-[10px] font-bold px-2 py-1 rounded-full bg-red-100 text-red-500">Tidak Deal</span>}</td>
+                          <td className="px-4 py-3 max-w-[180px]"><p className="text-[10px] text-gray-500">{row.note}</p></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          ) : dashTab === 'deals' ? (
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-5">
+                <div><h2 className="text-xl font-bold text-[#0F1A2F]">Deals & Collaboration</h2><p className="text-xs text-gray-400 mt-0.5">Semua kolaborasi aktif dan yang sudah selesai</p></div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                {[{label:'Total Deal', value:'16', color:'bg-[#0F1A2F] text-white', sub:'Sepanjang waktu'},{label:'Active Collab', value:'3', color:'bg-emerald-600 text-white', sub:'Sedang berjalan'},{label:'Nilai Kontrak', value:'Rp 45 Jt', color:'bg-[#C5A869] text-[#0F1A2F]', sub:'Fresh Money + Barter'}].map(s=>(
+                  <div key={s.label} className={`${s.color} rounded-2xl p-5 shadow-sm`}>
+                    <p className="text-xs font-bold opacity-70 uppercase tracking-wider mb-1">{s.label}</p>
+                    <p className="text-3xl font-['Cardo'] font-bold mb-1">{s.value}</p>
+                    <p className="text-xs opacity-60">{s.sub}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[720px]">
+                    <thead><tr className="bg-[#FDFBF7] border-b border-gray-100">{['Partner','Judul Kolaborasi','Tipe','Nilai','Status','MoU','LPJ','Aksi'].map(h=><th key={h} className="text-left px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">{h}</th>)}</tr></thead>
+                    <tbody>
+                      {[
+                        { av:'TN', name:'TechNova Solutions', title:'Tech Future Summit 2026', type:'Sponsorship', value:'Rp 15.000.000', status:'active', mou:true, lpj:false },
+                        { av:'KN', name:'Kreasi Nusantara', title:'Branding & Visual Identity Event', type:'Barter Value', value:'Est. Rp 5.000.000', status:'active', mou:true, lpj:false },
+                        { av:'DS', name:'Digital Startups ID', title:'Media Partner Ngabuburit Kreatif', type:'Barter Value', value:'Est. Rp 2.000.000', status:'active', mou:false, lpj:false },
+                        { av:'EM', name:'EduMaster Platform', title:'Afiliasi Sertifikasi IT Nasional', type:'Referral', value:'Komisi 20%', status:'done', mou:true, lpj:true },
+                        { av:'BJ', name:'Bank Jago', title:'Sponsorship Webinar Series', type:'Sponsorship', value:'Rp 8.000.000', status:'done', mou:true, lpj:true },
+                        { av:'TA', name:'TechIn Asia', title:'Media Partner Startup Fest 2025', type:'Media Partner', value:'Barter', status:'done', mou:true, lpj:true },
+                      ].map((row,i) => (
+                        <tr key={i} className="border-b border-gray-50 hover:bg-[#FDFBF7] transition">
+                          <td className="px-4 py-3"><div className="flex items-center gap-2"><div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0F1A2F] to-[#2D4066] text-[#C5A869] text-[10px] font-bold flex items-center justify-center flex-shrink-0">{row.av}</div><span className="text-sm font-bold text-[#0F1A2F]">{row.name}</span></div></td>
+                          <td className="px-4 py-3 max-w-[160px]"><p className="text-xs font-medium text-gray-700 truncate">{row.title}</p></td>
+                          <td className="px-4 py-3"><span className="text-[10px] font-bold bg-[#0F1A2F]/5 text-[#0F1A2F] px-2 py-1 rounded">{row.type}</span></td>
+                          <td className="px-4 py-3 text-xs font-bold text-[#0F1A2F]">{row.value}</td>
+                          <td className="px-4 py-3">{row.status==='active'?<span className="text-[10px] font-bold px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">Aktif</span>:<span className="text-[10px] font-bold px-2 py-1 rounded-full bg-gray-100 text-gray-500">Selesai</span>}</td>
+                          <td className="px-4 py-3">{row.mou?<CheckCircle className="w-4 h-4 text-emerald-500"/>:<div className="w-4 h-4 rounded-full border-2 border-gray-300"/>}</td>
+                          <td className="px-4 py-3">{row.lpj?<CheckCircle className="w-4 h-4 text-emerald-500"/>:<div className="w-4 h-4 rounded-full border-2 border-gray-300"/>}</td>
+                          <td className="px-4 py-3"><button className="text-[10px] font-bold text-[#C5A869] hover:underline">Detail →</button></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          ) : dashTab === 'reports' ? (
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-5">
+                <div><h2 className="text-xl font-bold text-[#0F1A2F]">Reports</h2><p className="text-xs text-gray-400 mt-0.5">Laporan kolaborasi yang dapat diunduh</p></div>
+                <button className="flex items-center gap-1.5 px-4 py-2 border border-gray-200 bg-white text-xs font-bold rounded-xl hover:bg-gray-50 text-gray-700 transition"><Download className="w-3.5 h-3.5"/> Export Semua</button>
+              </div>
+              <div className="space-y-4">
+                {[
+                  { title:'Monthly Performance Report – Mei 2026', desc:'Rangkuman performa proposal, koneksi, dan deal selama Mei 2026. Total deal baru: 3. Nilai kontrak baru: Rp 17.000.000.', type:'Monthly Report', date:'31 Mei 2026', size:'245 KB', badge:'Baru', badgeColor:'bg-blue-100 text-blue-700' },
+                  { title:'LPJ – Media Partner Ngabuburit Kreatif', desc:'Laporan Pertanggungjawaban kolaborasi dengan Digital Startups ID. Peserta hadir: 250 orang. Reach IG: 18.000 impression.', type:'LPJ', date:'15 Mei 2026', size:'180 KB', badge:'Terverifikasi', badgeColor:'bg-emerald-100 text-emerald-700' },
+                  { title:'Monthly Performance Report – Apr 2026', desc:'Performa April 2026: 4 proposal masuk, 2 deal baru, koneksi bertambah 28 akun. Deal rate: 40%.', type:'Monthly Report', date:'30 Apr 2026', size:'218 KB', badge:null, badgeColor:'' },
+                  { title:'LPJ – Sponsorship Webinar Series (Bank Jago)', desc:'LPJ kolaborasi sponsorship dengan Bank Jago. Total peserta: 520. NPS: 72. Semua kewajiban terpenuhi.', type:'LPJ', date:'20 Apr 2026', size:'312 KB', badge:'Terverifikasi', badgeColor:'bg-emerald-100 text-emerald-700' },
+                  { title:'Deal Summary Q1 2026', desc:'Ringkasan kuartal pertama 2026: 7 deal, total nilai Rp 38.000.000, rata-rata waktu proses 34 hari.', type:'Quarterly Report', date:'31 Mar 2026', size:'490 KB', badge:null, badgeColor:'' },
+                  { title:'LPJ – Media Partner Startup Fest 2025 (TechIn Asia)', desc:'LPJ kolaborasi media partner. Artikel tayang 2x, IG post 3x, reach total 45.000 impression. Rating: 5/5.', type:'LPJ', date:'15 Des 2025', size:'275 KB', badge:'Terverifikasi', badgeColor:'bg-emerald-100 text-emerald-700' },
+                ].map((r,i) => (
+                  <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row gap-4 sm:items-center hover:shadow-md transition-shadow">
+                    <div className="w-12 h-12 rounded-xl bg-[#0F1A2F]/5 flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-6 h-6 text-[#0F1A2F]"/>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <h4 className="font-bold text-sm text-[#0F1A2F]">{r.title}</h4>
+                        {r.badge && <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${r.badgeColor}`}>{r.badge}</span>}
+                      </div>
+                      <p className="text-xs text-gray-500 mb-2 leading-relaxed">{r.desc}</p>
+                      <div className="flex flex-wrap items-center gap-3 text-[10px] text-gray-400 font-medium">
+                        <span className="bg-[#0F1A2F]/5 text-[#0F1A2F] px-2 py-0.5 rounded font-bold">{r.type}</span>
+                        <span>📅 {r.date}</span>
+                        <span>📁 {r.size}</span>
+                      </div>
+                    </div>
+                    <button className="flex items-center gap-2 px-4 py-2 bg-[#0F1A2F] text-white text-xs font-bold rounded-xl hover:bg-[#1E2D4A] transition flex-shrink-0"><Download className="w-3.5 h-3.5"/> Download PDF</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : dashTab === 'saved' ? (
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-5">
+                <div><h2 className="text-xl font-bold text-[#0F1A2F]">Saved Insights</h2><p className="text-xs text-gray-400 mt-0.5">Postingan feed yang kamu simpan untuk follow-up</p></div>
+                <button onClick={() => navigateTo('feed')} className="flex items-center gap-1.5 px-4 py-2 border border-gray-200 bg-white text-xs font-bold rounded-xl hover:bg-gray-50 text-gray-700 transition"><Search className="w-3.5 h-3.5"/> Cari Feed</button>
+              </div>
+              <div className="space-y-4">
+                {[
+                  { av:'TN', brand:'TechNova Solutions', role:'Andi Wijaya • CEO', savedAt:'18 Mei 2026', type:'Sponsorship', scheme:'Fresh Money', title:'Sponsor Utama Tech Future Summit 2026', give:'Logo eksklusif di semua aset, 1 slot keynote speaker 15 menit, database 500+ peserta C-Level.', expect:'Pendanaan Rp 15.000.000 via Escrow.', note:'Prospek tinggi. Budget matching. Rencanakan kirim proposal Mei akhir.', followUpStatus:'Proposal Terkirim', statusColor:'bg-emerald-100 text-emerald-700' },
+                  { av:'SB', brand:'Startup Bootcamp ID', role:'Lena Hartono • Program Director', savedAt:'16 Mei 2026', type:'Sponsorship', scheme:'Fresh Money', title:'Lead Sponsor Demo Day Cohort 14', give:'Branding premium, meja networking eksklusif, akses pitching deck 50+ startup.', expect:'Pendanaan Rp 25.000.000 via Escrow.', note:'Nilai besar. Perlu diskusi internal dulu. Deadline akhir Mei.', followUpStatus:'Belum Diproses', statusColor:'bg-amber-100 text-amber-600' },
+                  { av:'EM', brand:'EduMaster Platform', role:'Rizky Ramadhan • Growth Lead', savedAt:'14 Mei 2026', type:'Strategic Partner', scheme:'Referral', title:'Afiliasi Kelas Sertifikasi IT Nasional', give:'Komisi 20% per peserta terdaftar.', expect:'Blast promosi ke minimal 5.000 kontak aktif.', note:'Cocok banget sama audience komunitas kita. Sudah di-approach.', followUpStatus:'Meeting Terjadwal', statusColor:'bg-blue-100 text-blue-700' },
+                  { av:'KN', brand:'Kreasi Nusantara', role:'Bima Sakti • Creative Director', savedAt:'10 Mei 2026', type:'Media Partner', scheme:'Barter Value', title:'Kolaborasi Branding & Visual Identity Event', give:'Full branding package: logo, banner, social media kit.', expect:'Exposure brand di semua materi event.', note:'Win-win! Kita butuh branding, mereka butuh exposure.', followUpStatus:'DEAL', statusColor:'bg-emerald-600 text-white' },
+                  { av:'GL', brand:'Griya Lestari', role:'Sarah Ayu • Marketing Manager', savedAt:'8 Mei 2026', type:'Community Partner', scheme:'Discount', title:'Fun Bike to Home – Community Support', give:'Diskon 50% booking fee, free merchandise, konsumsi.', expect:'Mobilisasi minimal 100 member hadir hari H.', note:'Menarik buat engagement offline member komunitas kita.', followUpStatus:'Belum Diproses', statusColor:'bg-amber-100 text-amber-600' },
+                ].map((item,i) => (
+                  <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0F1A2F] to-[#2D4066] text-[#C5A869] font-bold text-sm flex items-center justify-center flex-shrink-0">{item.av}</div>
+                        <div>
+                          <p className="font-bold text-sm text-[#0F1A2F]">{item.brand}</p>
+                          <p className="text-xs text-gray-400">{item.role}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${item.statusColor}`}>{item.followUpStatus}</span>
+                        <Bookmark className="w-4 h-4 text-[#C5A869] fill-current"/>
+                      </div>
+                    </div>
+                    <div className="bg-[#FDFBF7] border border-[#C5A869]/20 rounded-xl p-3 mb-3 border-l-4 border-l-[#C5A869]">
+                      <div className="flex flex-wrap gap-1.5 mb-2">
+                        <span className="text-[10px] font-bold bg-[#0F1A2F] text-white px-2 py-0.5 rounded">{item.type}</span>
+                        <span className="text-[10px] font-bold bg-[#C5A869]/10 text-[#AA7C11] border border-[#C5A869]/30 px-2 py-0.5 rounded">{item.scheme}</span>
+                      </div>
+                      <h4 className="font-['Cardo'] font-bold text-[#0F1A2F] text-sm mb-2">{item.title}</h4>
+                      <p className="text-xs text-gray-500"><strong>Benefit:</strong> {item.give}</p>
+                    </div>
+                    {item.note && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3 flex gap-2">
+                        <span className="text-amber-500 text-sm flex-shrink-0">📝</span>
+                        <p className="text-xs text-amber-800 italic">{item.note}</p>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-gray-400">Disimpan {item.savedAt}</span>
+                      <div className="flex gap-2">
+                        <button className="flex items-center gap-1 text-[10px] font-bold text-gray-500 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition"><X className="w-3 h-3"/> Hapus Simpan</button>
+                        <button onClick={() => { const found = Object.values(MOCK_FULL_PROFILES).find(p => p.brandName === item.brand); if(found) navigateTo('view-profile', found); else navigateTo('feed'); }} className="flex items-center gap-1 text-[10px] font-bold text-white bg-[#0F1A2F] px-3 py-1.5 rounded-lg hover:bg-[#1E2D4A] transition"><Send className="w-3 h-3"/> Apply Sekarang</button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : (
             <div className="flex items-center justify-center h-full min-h-[60vh]">
@@ -1732,6 +2075,9 @@ export default function App() {
 
       {/* Edit Profile Modal */}
       {showEditProfile && <EditProfileModal />}
+
+      {/* Notification Panel */}
+      {showNotifPanel && <NotifPanel />}
 
       {/* Proposal Modal */}
       {showProposalModal && (
