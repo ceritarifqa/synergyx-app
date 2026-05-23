@@ -1335,6 +1335,9 @@ export default function App() {
             </div>
             <div className="px-2"><span className="text-gray-400 text-[10px]">Plan: </span><span className="text-white font-bold text-[10px]">Pro</span></div>
             <button className="text-[#C5A869] text-[10px] font-bold hover:underline px-2">Upgrade Plan</button>
+            <button onClick={() => navigateTo('feed')} className="w-full flex items-center gap-2 mt-3 px-3 py-2.5 rounded-lg text-xs font-bold text-gray-300 hover:bg-[#2D4066]/50 hover:text-white transition-all border border-[#2D4066]/50">
+              <ArrowLeft className="w-3.5 h-3.5" /> Back to Main Menu
+            </button>
           </div>
         </div>
 
@@ -2032,7 +2035,7 @@ export default function App() {
       {currentView === 'dashboard' && <DashboardView />}
 
       {isAppView && (
-        <div className="flex max-w-screen-2xl mx-auto min-h-screen">
+        <div className="flex w-full min-h-screen">
           <Sidebar />
           <MobileHeader />
           <div className="flex flex-col flex-1 min-w-0 pt-14 md:pt-0">
